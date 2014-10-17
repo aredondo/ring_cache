@@ -24,9 +24,13 @@ class RingCache
   end
 
   def evict(key)
-    return false unless @cache.has_key?(key)
-    @access_time_index.delete([@cache[key][:last_accessed_at], key])
-    @cache.delete(key)
+    if @cache.has_key?(key)
+      @access_time_index.delete([@cache[key][:last_accessed_at], key])
+      @cache.delete(key)
+      true
+    else
+      false
+    end
   end
 
   def fetch(key, &block)
