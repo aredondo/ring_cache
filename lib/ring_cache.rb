@@ -2,7 +2,7 @@ require 'ring_cache/version'
 require 'set'
 
 class RingCache
-  attr_reader :capacity
+  attr_reader :capacity, :target_hit_rate
 
   def initialize(options = {})
     @duplicate_on_store = options.fetch(:duplicate_on_store, false)
@@ -10,6 +10,7 @@ class RingCache
     execute_on_retrieve = options.fetch(:execute_on_retrieve, [])
     @execute_on_retrieve = execute_on_retrieve.kind_of?(Array) ? execute_on_retrieve : [execute_on_retrieve]
     @capacity = options.fetch(:capacity, 25)
+    @target_hit_rate = options.fetch(:target_hit_rate, nil)
     reset
   end
 
@@ -84,7 +85,7 @@ class RingCache
   end
 
   def write(key, data)
-    maintain_cache_size(true)
+    evict_oldest if must_evict?
     data = data.dup if @duplicate_on_store and !data.nil?
     access_time = Time.now
     @cache[key] = { last_accessed_at: access_time, data: data }
@@ -93,17 +94,13 @@ class RingCache
 
   private
 
-  def maintain_cache_size(make_room_for_new_element = false)
-    target_size = make_room_for_new_element ? (capacity - 1) : capacity
-    deleted_count = 0
+  def evict_oldest
+    access_time_index_entry = @access_time_index.first
+    @cache.delete(access_time_index_entry[1])
+    @access_time_index.delete(access_time_index_entry)
+  end
 
-    while @cache.size > target_size
-      access_time_index_entry = @access_time_index.first
-      @cache.delete(access_time_index_entry[1])
-      @access_time_index.delete(access_time_index_entry)
-      deleted_count += 1
-    end
-
-    deleted_count
+  def must_evict?
+    (capacity and size >= capacity) or (target_hit_rate and hit_rate >= target_hit_rate)
   end
 end

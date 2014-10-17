@@ -148,6 +148,31 @@ class TestRingCache < Minitest::Test
     end
   end
 
+  def test_target_hit_rate
+    cache = RingCache.new(capacity: 4, target_hit_rate: 0.5)
+
+    cache.fetch(:a) { 1 }
+    cache.fetch(:b) { 2 }
+    cache.read(:a)
+    cache.read(:b)
+
+    assert_equal 0.5, cache.hit_rate
+    assert_equal 2, cache.size
+
+    cache.read(:a)
+    cache.read(:b)
+    cache.fetch(:c) { 3 }
+
+    assert_equal 4 / 7.0, cache.hit_rate
+    assert_equal 2, cache.size
+    assert cache.has_key?(:c)
+
+    cache.fetch(:d) { 4 }
+    assert_equal 4 / 8.0, cache.hit_rate
+    assert_equal 2, cache.size
+    assert cache.has_key?(:d)
+  end
+
   def test_works_with_nil
     cache = RingCache.new(
       duplicate_on_store: true,
