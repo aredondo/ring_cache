@@ -7,10 +7,16 @@ class RingCache
   def initialize(options = {})
     @duplicate_on_store = options.fetch(:duplicate_on_store, false)
     @duplicate_on_retrieve = options.fetch(:duplicate_on_retrieve, false)
+
     execute_on_retrieve = options.fetch(:execute_on_retrieve, [])
     @execute_on_retrieve = execute_on_retrieve.kind_of?(Array) ? execute_on_retrieve : [execute_on_retrieve]
-    @capacity = options.fetch(:capacity, 25)
+
+    @capacity = options.fetch(:capacity, nil)
     @target_hit_rate = options.fetch(:target_hit_rate, nil)
+    unless @target_hit_rate.nil? or (@target_hit_rate > 0.0 and @target_hit_rate < 1.0)
+      raise ArgumentError, 'Invalid target_hit_rate'
+    end
+
     reset
   end
 
