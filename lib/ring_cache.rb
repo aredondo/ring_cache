@@ -87,6 +87,7 @@ class RingCache
     @access_time_index = SortedSet.new
     @access_count = 0
     @hit_count = 0
+    true
   end
 
   def size
