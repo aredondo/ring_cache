@@ -1,3 +1,3 @@
-module RingCache
-  VERSION = "0.0.1"
+class RingCache
+  VERSION = '1.0'
 end
