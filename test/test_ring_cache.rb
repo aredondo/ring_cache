@@ -127,16 +127,17 @@ class TestRingCache < Minitest::Test
   end
 
   def test_random_data
-    cache = RingCache.new(capacity: 1_000)
+    cache = RingCache.new(capacity: 1_000, target_hit_rate: 0.4)
     data = random_data(2_000, 10)
 
-    data.each do |element|
+    10_000.times do
+      element = data.sample
       cache.fetch(element[:key]) do
         element[:content]
       end
     end
 
-    assert_equal 1_000, cache.size
+    assert cache.size <= 1_000
     access_time_index = cache.instance_variable_get(:@access_time_index)
     cache_contents = cache.instance_variable_get(:@cache)
     assert_equal cache_contents.size, access_time_index.size
