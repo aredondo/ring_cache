@@ -106,6 +106,7 @@ class RingCache
     access_time = Time.now
     @cache[key] = { last_accessed_at: access_time, data: data }
     @access_time_index << [access_time, key]
+    true
   end
 
   private
