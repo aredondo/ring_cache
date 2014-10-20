@@ -99,11 +99,14 @@ class RingCache
   end
 
   def write(key, data)
-    evict_oldest if must_evict?
+    unless evict(key)
+      evict_oldest if must_evict?
+    end
     data = data.dup if @duplicate_on_store and !data.nil?
     access_time = Time.now
     @cache[key] = { last_accessed_at: access_time, data: data }
     @access_time_index << [access_time, key]
+    true
   end
 
   private
