@@ -72,6 +72,29 @@ class TestRingCache < Minitest::Test
     assert_equal 0.0, c.hit_rate
   end
 
+  def test_dont_cache_throw
+    cache = RingCache.new
+
+    value = cache.fetch(:a) do
+      throw :dont_cache, [1, 2, 3]
+    end
+    assert_equal [1, 2, 3], value
+    refute cache.has_key?(:a)
+
+    value = cache.fetch(:a) do
+      throw :dont_cache
+    end
+    assert_nil value
+    refute cache.has_key?(:a)
+
+    value = cache.fetch(:a) do
+      [1, 2, 3]
+    end
+    assert cache.has_key?(:a)
+    assert_equal [1, 2, 3], value
+    assert_equal [1, 2, 3], cache.read(:a)
+  end
+
   def test_read_excl
     c = RingCache.new
     assert_raises RingCache::KeyNotFoundError do

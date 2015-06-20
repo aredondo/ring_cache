@@ -33,8 +33,11 @@ class RingCache
 
   def fetch(key, &block)
     unless (data = read(key))
-      data = block.call
-      write(key, data)
+      data = catch(:dont_cache) do
+        data_to_cache = block.call
+        write(key, data_to_cache)
+        data_to_cache
+      end
     end
     data
   end
