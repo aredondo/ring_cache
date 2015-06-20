@@ -2,11 +2,11 @@
 
 RingCache is an in-memory cache that emulates a ring buffer, in which older elements are evicted to make room for new ones. It is mostly useful in situations in which it is not worth it, or possible, to keep all accessed data in memory, and some elements are more frequently accessed than others.
 
-As a ring buffer, it can work with a fix capacity. In addition, it allows the possibility of specifying a target hit rate, above which it will evict the elements that were accessed last. This should make it easier to optimize the amount of memory used when the hit rate becomes insensitive to the capacity over a given threshold.
+As a ring buffer, it can work with a limited capacity. In addition, it allows the possibility of specifying a target hit rate, above which it will evict the elements that have not been accessed the longest. This should make it easier to optimize the amount of memory used when the hit rate becomes insensitive to the capacity over a given threshold—read [Pareto principle](https://en.wikipedia.org/wiki/Pareto_principle).
 
 ## Installation
 
-RingCache does not have any dependency apart from Ruby.
+RingCache does not have any dependency apart from Ruby Standard Library.
 
 To install with Bundle, add the following line to the Gemfile:
 
@@ -22,9 +22,7 @@ Otherwise, it can be installed with Rubygems as follows:
 
 ## Cache Initialization
 
-All options accepted by RingCache are set when initializing the cache.
-
-The options related to the cache size are:
+RingCache accepts the following options to configure the size of the cache:
 
 * `capacity`: The maximum number of elements that the cache will hold. By default, the capacity is unlimited.
 
@@ -58,6 +56,8 @@ test = cache.read(:example)
 
 Both keys and values can be any data type.
 
+The `read` method returns `nil` by default when the cache does not contain the requested key. Alternatively, `read!` raises a `RingCache::KeyNotFoundError` exception when the requested element is not in the cache.
+
 Use `fetch` as a shortcut to provide missing, more-costly-to-load data in a block:
 
 ```ruby
@@ -65,6 +65,30 @@ cache.fetch(:example) do
   'Lorem ipsum'
 end
 # => "Lorem ipsum"
+```
+
+By default, `fetch` will cache anything returned from the block. The option `cache_nil` allows specifying whether `nil` values should also be cache, and defaults to `true`:
+
+```ruby
+cache.fetch(:example, cache_nil: false) do
+  nil
+end
+# => nil
+
+cache.has_key?(:example)
+# => false
+```
+
+If already within the block it is determined that the returned content should not be cached, it is possible to throw a `:dont_cache` symbol. Optionally, the symbol can be accompanied by the value that should be returned from the block—while not cached:
+
+```ruby
+cache_fetch(:example) do
+  throw :dont_cache, true
+end
+# => true
+
+cache.has_key?(:example)
+# => false
 ```
 
 Use `evict` to remove an element from the cache:
