@@ -31,11 +31,13 @@ class RingCache
     end
   end
 
-  def fetch(key, &block)
+  def fetch(key, options = {}, &block)
+    cache_nil = options.fetch(:cache_nil, true)
+
     unless (data = read(key))
       data = catch(:dont_cache) do
         data_to_cache = block.call
-        write(key, data_to_cache)
+        write(key, data_to_cache) unless data_to_cache.nil? and !cache_nil
         data_to_cache
       end
     end

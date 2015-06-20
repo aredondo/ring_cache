@@ -219,8 +219,23 @@ class TestRingCache < Minitest::Test
       duplicate_on_retrieve: true,
       execute_on_retrieve: :reload
     )
-    data = nil
-    cache.write(:d, data)
+
+    cache.write(:d, nil)
+    assert cache.has_key?(:d)
     assert_nil cache.read(:d)
+
+    data = cache.fetch(:e) { nil }
+    assert_nil data
+    assert cache.has_key?(:e)
+    assert_nil cache.read(:e)
+
+    data = cache.fetch(:f, cache_nil: true) { nil }
+    assert_nil data
+    assert cache.has_key?(:f)
+    assert_nil cache.read(:f)
+
+    data = cache.fetch(:g, cache_nil: false) { nil }
+    assert_nil data
+    refute cache.has_key?(:g)
   end
 end
