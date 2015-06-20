@@ -1,7 +1,5 @@
-lib = File.dirname(__FILE__)
-$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
-
-require 'ring_cache/version'
+require_relative 'ring_cache/key_not_found_error'
+require_relative 'ring_cache/version'
 require 'set'
 
 class RingCache
@@ -33,10 +31,15 @@ class RingCache
     end
   end
 
-  def fetch(key, &block)
+  def fetch(key, options = {}, &block)
+    cache_nil = options.fetch(:cache_nil, true)
+
     unless (data = read(key))
-      data = block.call
-      write(key, data)
+      data = catch(:dont_cache) do
+        data_to_cache = block.call
+        write(key, data_to_cache) unless data_to_cache.nil? and !cache_nil
+        data_to_cache
+      end
     end
     data
   end
@@ -53,7 +56,7 @@ class RingCache
     has_key?(key) ? @cache[key][:last_accessed_at] : nil
   end
 
-  def read(key)
+  def read!(key)
     @access_count += 1
 
     if @cache.has_key?(key)
@@ -82,8 +85,14 @@ class RingCache
 
       data
     else
-      nil
+      fail KeyNotFoundError, "Cache does not have content indexed by #{key}"
     end
+  end
+
+  def read(key)
+    read!(key)
+  rescue KeyNotFoundError
+    return nil
   end
 
   def reset
