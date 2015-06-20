@@ -1,7 +1,4 @@
-lib = File.dirname(__FILE__)
-$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
-
-require 'ring_cache/version'
+require_relative 'ring_cache/version'
 require 'set'
 
 class RingCache
