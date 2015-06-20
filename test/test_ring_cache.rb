@@ -72,6 +72,22 @@ class TestRingCache < Minitest::Test
     assert_equal 0.0, c.hit_rate
   end
 
+  def test_read_excl
+    c = RingCache.new
+    assert_raises RingCache::KeyNotFoundError do
+      c.read!(:nope)
+    end
+
+    c.write(:nope, 1)
+    begin
+      c.read!(:nope)
+    rescue RingCache::KeyNotFoundError
+      assert false, 'RingCache::KeyNotFoundError exception raised'
+    end
+
+    assert_equal 1, c.read!(:nope)
+  end
+
   def test_execute_method_on_retrieve
     test_class = Class.new
     test_class.class_eval do

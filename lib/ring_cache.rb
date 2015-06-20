@@ -1,3 +1,4 @@
+require_relative 'ring_cache/key_not_found_error'
 require_relative 'ring_cache/version'
 require 'set'
 
@@ -50,7 +51,7 @@ class RingCache
     has_key?(key) ? @cache[key][:last_accessed_at] : nil
   end
 
-  def read(key)
+  def read!(key)
     @access_count += 1
 
     if @cache.has_key?(key)
@@ -79,8 +80,14 @@ class RingCache
 
       data
     else
-      nil
+      fail KeyNotFoundError, "Cache does not have content indexed by #{key}"
     end
+  end
+
+  def read(key)
+    read!(key)
+  rescue KeyNotFoundError
+    return nil
   end
 
   def reset
