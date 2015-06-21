@@ -82,7 +82,7 @@ cache.has_key?(:example)
 If already within the block it is determined that the returned content should not be cached, it is possible to throw a `:dont_cache` symbol. Optionally, the symbol can be accompanied by the value that should be returned from the block—while not cached:
 
 ```ruby
-cache_fetch(:example) do
+cache.fetch(:example) do
   throw :dont_cache, true
 end
 # => true
