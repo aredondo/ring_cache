@@ -1,8 +1,9 @@
-require_relative 'ring_cache/key_not_found_error'
-require_relative 'ring_cache/version'
 require 'set'
 
 class RingCache
+  require_relative 'ring_cache/key_not_found_error'
+  require_relative 'ring_cache/version'
+
   attr_reader :capacity, :target_hit_rate
 
   def initialize(options = {})
