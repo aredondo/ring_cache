@@ -26,7 +26,7 @@ RingCache accepts the following options to configure the size of the cache:
 
 * `capacity`: The maximum number of elements that the cache will hold. By default, the capacity is unlimited.
 
-* `target_hit_rate`: The cache will keep on growing in size until this target is achieved. Then, it will evict elements to make room for new ones to maintain its current size—as long as the hit rate is kept over this threshold. If the hit rate falls below the threshold, the cache will increase its size again. Size is always limited by the `capacity` option. By default, there is no target hit rate.
+* `target_hit_rate`: The cache will keep on growing in size until this target, expressed as a float number between 0 and 1, is achieved. Then, it will evict elements to make room for new ones to maintain its current size—as long as the hit rate is kept over this threshold. If the hit rate falls below the threshold, the cache will increase its size again. Size is always limited by the `capacity` option. By default, there is no target hit rate.
 
 The following options allow some control over the stored data:
 
@@ -103,7 +103,7 @@ And `reset` to completely erase the cache contents—while maintaining initializ
 There are other methods that just return information:
 
 * `has_key?(key)`: Returns true if the cache contains an element indexed by this key. Otherwise, false.
-* `hit_rate`: Current hit rate of the cache. This is a number between 0 and 1.
+* `hit_rate`: Current hit rate of the cache. This is a float number between 0 and 1, where 1 would be a 100% success.
 * `last_access(key)`: Time when the element indexed by this key was last accessed.
 * `size`: Number of elements currently stored in the cache.
 
